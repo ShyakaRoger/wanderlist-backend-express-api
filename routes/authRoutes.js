@@ -3,23 +3,23 @@ const router = express.Router();
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
-// Register route
+// Registering route
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if username or email already exists
+    // Checking if username or email already exists
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
     if (existingUser) {
       return res.status(409).json({ err: 'Username or email already taken.' });
     }
 
-    // Create new user
+    // Creating new user
     const newUser = new User({ username, email, password });
     await newUser.save();
 
-    // Create JWT token
+    // Creating JWT token
     const payload = { id: newUser._id, username: newUser.username };
     const token = jwt.sign(payload, process.env.JWT_SECRET);
 
@@ -35,21 +35,21 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Find user by username
+    // Finding user by username
     const user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ err: 'Invalid credentials.' });
     }
 
-    // Compare password
+    // Comparing password
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
       return res.status(401).json({ err: 'Invalid credentials.' });
     }
 
-    // Create JWT token
+    // Creating JWT token
     const payload = { id: user._id, username: user.username };
     const token = jwt.sign(payload, process.env.JWT_SECRET);
 
