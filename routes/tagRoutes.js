@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Tag = require('../models/tag');
+const verifyToken = require('../middlewares/AuthMiddleware'); 
 
+// GET all tags (public route)
 router.get('/', async (req, res) => {
   try {
     const tags = await Tag.find();
@@ -11,6 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET tag by ID (public route)
 router.get('/:id', async (req, res) => {
   try {
     const tag = await Tag.findById(req.params.id);
@@ -21,7 +24,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// CREATE tag (protected route)
+router.post('/', verifyToken, async (req, res) => {
   try {
     const newTag = await Tag.create(req.body);
     res.status(201).json(newTag);
@@ -30,7 +34,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+// UPDATE tag (protected route)
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const updated = await Tag.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ err: 'Not found' });
@@ -40,7 +45,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+// DELETE tag (protected route)
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const deleted = await Tag.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ err: 'Not found' });

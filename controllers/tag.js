@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Tag = require('../models/Tag');
 
-// Get all tags
+// Getting all tags
 router.get('/', async (req, res) => {
   try {
     const tags = await Tag.find();
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get tag by ID
+// Getting a tag by ID
 router.get('/:id', async (req, res) => {
   try {
     const tag = await Tag.findById(req.params.id);
@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new tag
+// Creating new tag
 router.post('/', async (req, res) => {
   try {
     const newTag = await Tag.create(req.body);
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update tag by ID
+// Updating tag by ID
 router.put('/:id', async (req, res) => {
   try {
     const updatedTag = await Tag.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -44,7 +44,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete tag by ID
+// Deleting tag by ID
 router.delete('/:id', async (req, res) => {
   try {
     const deletedTag = await Tag.findByIdAndDelete(req.params.id);

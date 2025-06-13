@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get one destination by ID
+// Gettin one destination by ID
 router.get('/:id', async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create a new destination
+// Creating a new destination
 router.post('/', async (req, res) => {
   try {
     const newDestination = await Destination.create(req.body);
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update destination by ID
+// Updating destination by ID
 router.put('/:id', async (req, res) => {
   try {
     const updatedDestination = await Destination.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -44,7 +44,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete destination by ID
+// Deletinf a destination by ID
 router.delete('/:id', async (req, res) => {
   try {
     const deletedDestination = await Destination.findByIdAndDelete(req.params.id);

@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Destination = require('../models/destination');
+const verifyToken = require('../middlewares/AuthMiddleware');
 
-router.get('/', async (req, res) => {
+// Get all destinations (protected)
+router.get('/', verifyToken, async (req, res) => {
   try {
     const destinations = await Destination.find();
     res.json(destinations);
@@ -11,7 +13,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+// Get destination by ID (protected)
+router.get('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
     if (!destination) return res.status(404).json({ err: 'Not found' });
@@ -21,7 +24,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// Create destination (protected)
+router.post('/', verifyToken, async (req, res) => {
   try {
     const newDestination = await Destination.create(req.body);
     res.status(201).json(newDestination);
@@ -30,7 +34,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+// Update destination (protected)
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const updated = await Destination.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ err: 'Not found' });
@@ -40,7 +45,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+// Delete destination (protected)
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const deleted = await Destination.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ err: 'Not found' });
