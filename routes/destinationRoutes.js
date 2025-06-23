@@ -3,7 +3,7 @@ const router = express.Router();
 const Destination = require('../models/destination');
 const verifyToken = require('../middlewares/authMiddleware');
 
-// Public: Get all destinations 
+// Public: Get all public destinations
 router.get('/public', async (req, res) => {
   try {
     const destinations = await Destination.find({ public: true });
@@ -13,55 +13,76 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// Protected: Get all destinations (all for this project)
+// Protected: Get all destinations 
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const destinations = await Destination.find();
+    const destinations = await Destination.find({ user: req.user.id });
     res.json(destinations);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
 });
 
-// Protected: Get destination by ID
+// Protected: Get destination by ID 
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
+
     if (!destination) return res.status(404).json({ err: 'Not found' });
+    if (destination.user.toString() !== req.user.id) {
+      return res.status(403).json({ err: 'Access denied' });
+    }
+
     res.json(destination);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
 });
 
-// Protected: Create destination
+// Create destination 
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const data = { ...req.body, user: req.user.id };
-    const newDestination = await Destination.create(data);
+    const newDestination = new Destination({
+      ...req.body,
+      user: req.user.id 
+    });
+
+    await newDestination.save();
     res.status(201).json(newDestination);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
 });
 
-// Protected: Update destination
+// Update destination 
 router.put('/:id', verifyToken, async (req, res) => {
   try {
+    const destination = await Destination.findById(req.params.id);
+    if (!destination) return res.status(404).json({ err: 'Not found' });
+
+    if (destination.user.toString() !== req.user.id) {
+      return res.status(403).json({ err: 'Access denied' });
+    }
+
     const updated = await Destination.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ err: 'Not found' });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
 });
 
-// Protected: Delete destination
+// Delete destination 
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const deleted = await Destination.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ err: 'Not found' });
-    res.json({ message: 'Deleted' });
+    const destination = await Destination.findById(req.params.id);
+    if (!destination) return res.status(404).json({ err: 'Not found' });
+
+    if (destination.user.toString() !== req.user.id) {
+      return res.status(403).json({ err: 'Access denied' });
+    }
+
+    await destination.remove();
+    res.json({ message: 'Deleted successfully' });
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
