@@ -3,11 +3,12 @@ const router = express.Router();
 const Destination = require('../models/Destination');
 const verifyToken = require('../middlewares/authMiddleware');
 
-// Public: Get all public destinations
+// Public: Get all destinations (public and private)
 router.get('/public', async (req, res) => {
   try {
-    const destinations = await Destination.find({ public: true });
-    res.json(destinations);
+    // Fetch all destinations, regardless of whether they are public or private
+    const destinations = await Destination.find();
+    res.json(destinations);  // Return all destinations to all users (logged in or not)
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
@@ -16,8 +17,9 @@ router.get('/public', async (req, res) => {
 // Protected: Get all destinations for the logged-in user
 router.get('/', verifyToken, async (req, res) => {
   try {
+    // Fetch destinations belonging to the logged-in user
     const destinations = await Destination.find({ user: req.user.id });
-    res.json(destinations);
+    res.json(destinations);  // Return user's private destinations
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
