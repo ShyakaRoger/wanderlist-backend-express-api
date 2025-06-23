@@ -33,6 +33,11 @@ const DestinationSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
     trim: true
+  },
+  priority: {
+    type: String,
+    enum: ['Planned', 'Visited'],
+    default: 'Planned'
   }
 }, { 
   timestamps: true,

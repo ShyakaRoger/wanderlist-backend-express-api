@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Destination = require('../models/destination');
+const Destination = require('../models/Destination');
 const verifyToken = require('../middlewares/authMiddleware');
 
 // Public: Get all public destinations
@@ -13,7 +13,7 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// Protected: Get all destinations 
+// Protected: Get all destinations for the logged-in user
 router.get('/', verifyToken, async (req, res) => {
   try {
     const destinations = await Destination.find({ user: req.user.id });
@@ -23,12 +23,15 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// Protected: Get destination by ID 
+// Protected: Get a single destination by ID
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
 
-    if (!destination) return res.status(404).json({ err: 'Not found' });
+    if (!destination) {
+      return res.status(404).json({ err: 'Not found' });
+    }
+
     if (destination.user.toString() !== req.user.id) {
       return res.status(403).json({ err: 'Access denied' });
     }
@@ -39,12 +42,12 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Create destination 
+// Protected: Create a new destination
 router.post('/', verifyToken, async (req, res) => {
   try {
     const newDestination = new Destination({
       ...req.body,
-      user: req.user.id 
+      user: req.user.id
     });
 
     await newDestination.save();
@@ -54,11 +57,14 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
-// Update destination 
+// Protected: Update a destination
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
-    if (!destination) return res.status(404).json({ err: 'Not found' });
+
+    if (!destination) {
+      return res.status(404).json({ err: 'Not found' });
+    }
 
     if (destination.user.toString() !== req.user.id) {
       return res.status(403).json({ err: 'Access denied' });
@@ -71,20 +77,24 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Delete destination 
+// Protected: Delete a destination
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
-    if (!destination) return res.status(404).json({ err: 'Not found' });
 
-    if (destination.user.toString() !== req.user.id) {
-      return res.status(403).json({ err: 'Access denied' });
+    if (!destination) {
+      return res.status(404).json({ err: 'Destination not found' });
     }
 
-    await destination.remove();
+    if (destination.user.toString() !== req.user.id) {
+      return res.status(403).json({ err: 'Unauthorized to delete this destination' });
+    }
+
+    await Destination.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    console.error('DELETE ERROR:', err.message);
+    res.status(500).json({ err: 'Server error during delete' });
   }
 });
 
