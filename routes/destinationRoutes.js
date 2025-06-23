@@ -1,9 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Destination = require('../models/destination');
-const verifyToken = require('../middlewares/AuthMiddleware');
+const verifyToken = require('../middlewares/authMiddleware');
 
-// Get all destinations (protected)
+// Public: Get all destinations 
+router.get('/public', async (req, res) => {
+  try {
+    const destinations = await Destination.find({ public: true });
+    res.json(destinations);
+  } catch (err) {
+    res.status(500).json({ err: err.message });
+  }
+});
+
+// Protected: Get all destinations (all for this project)
 router.get('/', verifyToken, async (req, res) => {
   try {
     const destinations = await Destination.find();
@@ -13,7 +23,7 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// Get destination by ID (protected)
+// Protected: Get destination by ID
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     const destination = await Destination.findById(req.params.id);
@@ -24,17 +34,18 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Create destination (protected)
+// Protected: Create destination
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const newDestination = await Destination.create(req.body);
+    const data = { ...req.body, user: req.user.id };
+    const newDestination = await Destination.create(data);
     res.status(201).json(newDestination);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
 });
 
-// Update destination (protected)
+// Protected: Update destination
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const updated = await Destination.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -45,7 +56,7 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Delete destination (protected)
+// Protected: Delete destination
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const deleted = await Destination.findByIdAndDelete(req.params.id);
