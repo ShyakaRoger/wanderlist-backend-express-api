@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Tag = require('../models/tag');
-const verifyToken = require('../middlewares/AuthMiddleware'); 
+const verifyToken = require('../middlewares/authMiddleware'); 
 
 // GET all tags (public route)
 router.get('/', async (req, res) => {
