@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Destination = require('../models/Destination');
+const Destination = require('../models/destination');
 
 // Get all destinations
 router.get('/', async (req, res) => {
