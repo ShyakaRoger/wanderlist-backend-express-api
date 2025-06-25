@@ -7,97 +7,118 @@ const verifyToken = require('../middlewares/authMiddleware');
 router.get('/public', async (req, res) => {
   try {
     // Fetch all destinations, regardless of whether they are public or private
-    const destinations = await Destination.find();
-    res.json(destinations);  // Return all destinations to all users (logged in or not)
+    const destinations = await Destination.find();  // Query the database to get all destinations
+    res.json(destinations);  // Return the destinations to all users (logged in or not)
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    // If an error occurs during database fetching
+    res.status(500).json({ err: err.message });  // Return error response
   }
 });
 
 // Protected: Get all destinations for the logged-in user
 router.get('/', verifyToken, async (req, res) => {
   try {
-    // Fetch destinations belonging to the logged-in user
-    const destinations = await Destination.find({ user: req.user.id });
-    res.json(destinations);  // Return user's private destinations
+    // Verify that the user is logged in using the verifyToken middleware
+    const destinations = await Destination.find({ user: req.user.id });  // Fetch destinations for the logged-in user
+    res.json(destinations);  // Return destinations that belong to the authenticated user
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    // If an error occurs during database fetching
+    res.status(500).json({ err: err.message });  // Return error response
   }
 });
 
 // Protected: Get a single destination by ID
 router.get('/:id', verifyToken, async (req, res) => {
   try {
+    // Fetch a destination by its unique ID from the database
     const destination = await Destination.findById(req.params.id);
 
     if (!destination) {
-      return res.status(404).json({ err: 'Not found' });
+      // If no destination is found with the given ID
+      return res.status(404).json({ err: 'Not found' });  // Return a 404 response
     }
 
+    // Check if the destination belongs to the logged-in user
     if (destination.user.toString() !== req.user.id) {
-      return res.status(403).json({ err: 'Access denied' });
+      // If the user is not authorized to access this destination
+      return res.status(403).json({ err: 'Access denied' });  // Return a 403 Forbidden response
     }
 
-    res.json(destination);
+    res.json(destination);  // Return the destination data to the user
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    // If an error occurs during database fetching
+    res.status(500).json({ err: err.message });  // Return error response
   }
 });
 
 // Protected: Create a new destination
 router.post('/', verifyToken, async (req, res) => {
   try {
+    // Create a new destination document using the data from the request body
     const newDestination = new Destination({
-      ...req.body,
-      user: req.user.id
+      ...req.body,  // Spread the incoming data (name, location, etc.)
+      user: req.user.id  // Set the user ID from the authenticated user
     });
 
-    await newDestination.save();
-    res.status(201).json(newDestination);
+    await newDestination.save();  // Save the new destination to the database
+    res.status(201).json(newDestination);  // Return the newly created destination
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    // If an error occurs during saving
+    res.status(500).json({ err: err.message });  // Return error response
   }
 });
 
 // Protected: Update a destination
 router.put('/:id', verifyToken, async (req, res) => {
   try {
+    // Fetch the destination by its ID
     const destination = await Destination.findById(req.params.id);
 
     if (!destination) {
-      return res.status(404).json({ err: 'Not found' });
+      // If no destination is found with the given ID
+      return res.status(404).json({ err: 'Not found' });  // Return a 404 response
     }
 
+    // Check if the destination belongs to the logged-in user
     if (destination.user.toString() !== req.user.id) {
-      return res.status(403).json({ err: 'Access denied' });
+      // If the user is not authorized to update this destination
+      return res.status(403).json({ err: 'Access denied' });  // Return a 403 Forbidden response
     }
 
+    // Update the destination with the new data from the request body
     const updated = await Destination.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+
+    res.json(updated);  // Return the updated destination data
   } catch (err) {
-    res.status(500).json({ err: err.message });
+    // If an error occurs during the update
+    res.status(500).json({ err: err.message });  // Return error response
   }
 });
 
 // Protected: Delete a destination
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    // Fetch the destination by its ID
     const destination = await Destination.findById(req.params.id);
 
     if (!destination) {
-      return res.status(404).json({ err: 'Destination not found' });
+      // If no destination is found with the given ID
+      return res.status(404).json({ err: 'Destination not found' });  // Return a 404 response
     }
 
+    // Check if the destination belongs to the logged-in user
     if (destination.user.toString() !== req.user.id) {
-      return res.status(403).json({ err: 'Unauthorized to delete this destination' });
+      // If the user is not authorized to delete this destination
+      return res.status(403).json({ err: 'Unauthorized to delete this destination' });  // Return a 403 Forbidden response
     }
 
-    await Destination.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted successfully' });
+    await Destination.findByIdAndDelete(req.params.id);  // Delete the destination from the database
+    res.json({ message: 'Deleted successfully' });  // Return a success message
   } catch (err) {
+    // If an error occurs during the delete operation
     console.error('DELETE ERROR:', err.message);
-    res.status(500).json({ err: 'Server error during delete' });
+    res.status(500).json({ err: 'Server error during delete' });  // Return error response
   }
 });
 
-module.exports = router;
+module.exports = router;  // Export the routes to be used in the main app.js
